@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>My weather</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    
+</head>
+
+<body id="page-top">
+
+    <div class="jumbotron">
+        <form method='POST' id="form" name="form" class="form-inline">
+            {% csrf_token %}
+            <div class="form-group" style="margin-left: auto; margin-right: auto;">
+                <h3 align=center> Weather in {{my_city}} </h3>
+                <br>
+                <table>
+                    <tr>
+                        <th><label>Weather in </label></th>
+                        <th style='padding: 10px'> {{choice_field.my_city}} </th>
+                        <th><label>from</label></th>
+                        <th style='padding: 10px'> {{date_field.start_date}} </th>
+                        <th style=><label>to</label></th>
+                        <th style='padding: 10px'> {{date_field.end_date}} </th>
+                        <th style=><button type="submit" class="btn btn-primary">Find my weather</button></th>
+                    </tr>
+                </table>
+            </div>
+        </form>
+        <div class="container">
+            <br>
+            <h4 align=center>{{error}}</h4>
+            {% for q in my_data %}
+            <table class="table-sm" style="margin-left: auto; margin-right: auto;">
+                <tr>
+                    <th>{{q.my_date}}</th>
+                    <td>{{q.my_temp}} ° C</td>
+                </tr>
+            </table>
+            {% endfor %}
+        </div>
+        <div align=center method='POST'>
+            {% if my_data.has_other_pages %}
+            <ul class="pagination">
+                {% if my_data.has_previous %}
+                <li><a href="?page={{ my_data.previous_page_number }}">&laquo;</a></li>
+                {% else %}
+                <li class="disabled"><span>&laquo;</span></li>
+                {% endif %}
+                {% for i in my_data.paginator.page_range %}
+                {% if my_data.number == i %}
+                <li class="active"><span>{{ i }}<span class="sr-only">(current)</span></span></li>
+                {% else %}
+                <li><a href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if my_data.has_next %}
+                <li><a href="?page={{ my_data.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                <li class="disabled"><span>&raquo;</span></li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+    <div align=center>
+        <nav>
+            <ul class="pagination pagination-lg">
+                <li class="page-item"><a class="page-link" href="http://127.0.0.1:8000">Main page</a></li>
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">
+                        Weather with filters
+                        <span class="sr-only">(current)</span>
+                    </span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</body>
+
+</html>

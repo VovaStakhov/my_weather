@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>My weather</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+</head>
+
+<body id="page-top">
+
+    <div class="jumbotron">
+        <div class="container">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group"><input class="form-control" type="text" name="city" placeholder="Type your city"></div>
+                <div class="form-group"><button class="btn btn-primary btn-block" type="submit">Find my weather</button></div>
+            </form>
+
+            <div class="container">
+                <p>{{ weather_data.status }}</p>
+                <p>{{ weather_data.city }} {{ weather_data.temperature }} {{ weather_data.units }}<p>
+                <p><a href='/result'>{{ weather_data.more }}</a></p>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
