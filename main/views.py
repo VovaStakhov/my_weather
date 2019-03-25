@@ -87,7 +87,6 @@ def result(request):
     my_city = 'London'
     select_date = request.POST.get('end_date_day', False)
 
-
     if select_date == False:
         date_field = SelectDateForm()
         choice_field = SelectDateForm()
