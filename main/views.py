@@ -87,8 +87,15 @@ def result(request):
 
     my_result = []
     select_date = request.POST.get('end_date_day', False)
+    select_page = request.GET.get('page', False)
 
-    if select_date == False:
+    if (select_date == False) and (select_page == False):
+        date_field = SelectDateForm()
+        choice_field = SelectDateForm()
+        message = 'Choose you city and date'
+        context= {'message':message, 'date_field': date_field, 'choice_field': choice_field}
+        return render(request, 'result.html', context)
+    elif select_date == False:
         date_field = SelectDateForm()
         choice_field = SelectDateForm()
         cursor = connection.cursor()
@@ -104,7 +111,8 @@ def result(request):
         paginator = Paginator(my_data, 8)
         page = request.GET.get('page')  
         my_data = paginator.get_page(page)
-        context= {'my_data': my_data, 'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field}
+        message = str('Weather in ' + str(my_city) + ' from ' + str(datetime.fromtimestamp(start_date).strftime("%d %B")) + ' to ' + str(datetime.fromtimestamp(end_date).strftime("%d %B")) + ':')
+        context= {'message': message, 'my_data': my_data, 'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field}
         return render(request, 'result.html', context)
     else:
         if request.method == 'POST':
@@ -127,9 +135,10 @@ def result(request):
             my_data = list(map(convert_time, my_result))
             paginator = Paginator(my_data, 8)
             my_data = paginator.get_page(1)
-            context= {'my_data': my_data, 'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field}
+            message = str('Weather in ' + str(my_city) + ' from ' + str(datetime.fromtimestamp(start_date).strftime("%d %B")) + ' to ' + str(datetime.fromtimestamp(end_date).strftime("%d %B")) + ':')
+            context= {'message': message, 'my_data': my_data, 'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field}
             return render(request, 'result.html', context)
         else:
-            error= 'Select correct date range!'
-            context = {'my_city': my_city['name_city'], 'date_field': date_field, 'choice_field': choice_field, 'error': error}
+            message= 'Choose correct date range!'
+            context = {'date_field': date_field, 'choice_field': choice_field, 'message': message}
             return render(request, 'result.html', context)
