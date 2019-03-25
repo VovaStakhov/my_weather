@@ -15,12 +15,7 @@ if int(current_day) > 26:
 else:
     month = {current_month: strftime("%B", gmtime())}
 
-# all_city = []
-# for i in city_dict:
-#     all_city.append(i['name_city'])
-
-
 class SelectDateForm(forms.Form):
     start_date = forms.DateField(initial=timezone.now(), widget=forms.SelectDateWidget(years = year, months = month))
     end_date = forms.DateField(initial=timezone.now(), widget=forms.SelectDateWidget(years = year, months = month))
-    my_city = forms.ModelChoiceField(queryset = Weather.objects.values('name_city').distinct())
+    my_city = forms.ModelChoiceField(queryset = Weather.objects.values_list('name_city', flat=True).distinct())

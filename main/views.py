@@ -73,10 +73,12 @@ def get_data(request):
 
     cursor = connection.cursor()
     cursor.execute('SELECT * FROM main_weather ORDER BY ID DESC LIMIT 1')
-    my_city = cursor.fetchall()
-    my_city = my_city[0][1]
+    city = cursor.fetchall()
+    city = city[0][1]
+    my_city = request.POST.get('my_city', city) 
+    
 
-    return ({'start_date': start_date, 'end_date': end_date, 'city': my_city}) 
+    return ({'start_date': start_date, 'end_date': end_date, 'my_city': my_city}) 
 
 def convert_time(i):
     return {'my_city': i[0], 'my_temp': i[1], 'my_date': datetime.fromtimestamp(i[2]).strftime("%B %d, %H:%M")}
@@ -84,7 +86,6 @@ def convert_time(i):
 def result(request):
 
     my_result = []
-    my_city = 'London'
     select_date = request.POST.get('end_date_day', False)
 
     if select_date == False:
@@ -95,6 +96,8 @@ def result(request):
         start_date = cursor.fetchall()[0][0]
         cursor.execute('SELECT end_date FROM main_date ORDER BY ID DESC LIMIT 1')
         end_date = cursor.fetchall()[0][0]
+        cursor.execute('SELECT my_city FROM main_date ORDER BY ID DESC LIMIT 1')
+        my_city = cursor.fetchall()[0][0]
         cursor.execute('SELECT DISTINCT name_city, temperature, date FROM main_weather WHERE name_city = %s AND date BETWEEN %s AND %s GROUP BY date', [my_city, start_date, end_date])
         my_result = cursor.fetchall()
         my_data = list(map(convert_time, my_result))
@@ -113,10 +116,10 @@ def result(request):
         period = get_data(request)
         start_date = period['start_date']
         end_date = period['end_date'] + 86399
-        my_city = period['city']
+        my_city = period['my_city']
 
         if start_date <= end_date:
-            q = Date(start_date=start_date, end_date=end_date)
+            q = Date(start_date=start_date, end_date=end_date, my_city=my_city)
             q.save()
             cursor = connection.cursor()
             cursor.execute('SELECT DISTINCT name_city, temperature, date FROM main_weather WHERE name_city = %s AND date BETWEEN %s AND %s GROUP BY date', [my_city, start_date, end_date])
@@ -128,5 +131,5 @@ def result(request):
             return render(request, 'result.html', context)
         else:
             error= 'Select correct date range!'
-            context = {'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field, 'error': error}
+            context = {'my_city': my_city['name_city'], 'date_field': date_field, 'choice_field': choice_field, 'error': error}
             return render(request, 'result.html', context)

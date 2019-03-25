@@ -12,4 +12,5 @@ class Weather(models.Model):
 class Date(models.Model):
     start_date = models.FloatField()
     end_date = models.FloatField()
+    my_city = models.CharField(max_length = 30)
     objects = models.Manager ()
