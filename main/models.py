@@ -7,3 +7,8 @@ class Weather(models.Model):
  
     def _str_(self):
         return self.name_city
+
+class Date(models.Model):
+    start_date = models.FloatField()
+    end_date = models.FloatField()
+    #my_city = models.CharField(max_length = 30)

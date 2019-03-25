@@ -4,7 +4,7 @@ from time import gmtime, strftime
 from django.utils import timezone
 from datetime import datetime
 import requests
-from .models import Weather
+from .models import Date
 
 current_year, current_month, current_day = strftime("%Y", gmtime()), strftime("%m", gmtime()), strftime("%d", gmtime())
 next_month = datetime.strptime(('0' + str(int(current_month)+1)), "%m")
@@ -15,7 +15,6 @@ if int(current_day) > 26:
 else:
     month = {current_month: strftime("%B", gmtime())}
 
-#my_city = Weather.objects.values_list('name_city')
 
 class SelectDateForm(forms.Form):
     start_date = forms.DateField(initial=timezone.now(), widget=forms.SelectDateWidget(years = year, months = month))

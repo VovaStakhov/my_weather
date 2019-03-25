@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import requests
-from .models import Weather
+from .models import Weather, Date
 from django.db import connection
 from datetime import datetime
 import time
@@ -81,59 +81,53 @@ def get_data(request):
 def convert_time(i):
     return {'my_city': i[0], 'my_temp': i[1], 'my_date': datetime.fromtimestamp(i[2]).strftime("%B %d, %H:%M")}
 
-
 def result(request):
-    # if request.method != 'POST':
-    #     start_date = ''
-    #     end_date = ''
-    #     my_city = ''
-    # else:
 
     my_result = []
     my_city = 'London'
-    page_out = request.POST.get('page', False)
+    select_date = request.POST.get('end_date_day', False)
 
-    if page_out == False:    
-        period = get_data(request)
-        start_date = period['start_date']
-        end_date = period['end_date'] + 86400
-        my_city = period['city']
-        print(start_date, end_date, my_city)
-        cursor = connection.cursor()
-        cursor.execute('SELECT DISTINCT name_city, temperature, date FROM main_weather WHERE %s <= date < %s AND name_city = %s GROUP BY date', [start_date, end_date, my_city])
-        my_result = cursor.fetchall()
-    #print(my_result)
-        if request.method == 'POST':
-            date_field = SelectDateForm(request.POST)
-            choice_field = SelectDateForm(request.POST)
-        date_field = SelectDateForm()    
+
+    if select_date == False:
+        date_field = SelectDateForm()
         choice_field = SelectDateForm()
-
-    # my_data = []
-   
-    #if start_date <= end_date:
-    #     for i in my_result:
-    #         if i[1] == my_city and start_date <= i[3] < end_date:
-    #             my_data.append(i)
-        #print(my_data)
-
-        #my_data = list(dict.fromkeys(my_data))
-        #print(my_data)
+        cursor = connection.cursor()
+        cursor.execute('SELECT start_date FROM main_date ORDER BY ID DESC LIMIT 1')
+        start_date = cursor.fetchall()[0][0]
+        cursor.execute('SELECT end_date FROM main_date ORDER BY ID DESC LIMIT 1')
+        end_date = cursor.fetchall()[0][0]
+        cursor.execute('SELECT DISTINCT name_city, temperature, date FROM main_weather WHERE name_city = %s AND date BETWEEN %s AND %s GROUP BY date', [my_city, start_date, end_date])
+        my_result = cursor.fetchall()
         my_data = list(map(convert_time, my_result))
-        #print(my_data)
         paginator = Paginator(my_data, 8)
         page = request.GET.get('page')  
         my_data = paginator.get_page(page)
-        #print(my_data)
         context= {'my_data': my_data, 'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field}
         return render(request, 'result.html', context)
     else:
-        page = request.GET.get('page')  
-        my_data = paginator.get_page(page)
-        #print(my_data)
-        context= {'my_data': my_data, 'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field}
-        return render(request, 'result.html', context)
-    # else:
-    #     error= 'Select correct date range!'
-    #     context = {'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field, 'error': error}
-    #     return render(request, 'result.html', context)
+        if request.method == 'POST':
+            date_field = SelectDateForm(request.POST)
+            choice_field = SelectDateForm(request.POST)
+        date_field = SelectDateForm()
+        choice_field = SelectDateForm()
+
+        period = get_data(request)
+        start_date = period['start_date']
+        end_date = period['end_date'] + 86399
+        my_city = period['city']
+
+        if start_date <= end_date:
+            q = Date(start_date=start_date, end_date=end_date)
+            q.save()
+            cursor = connection.cursor()
+            cursor.execute('SELECT DISTINCT name_city, temperature, date FROM main_weather WHERE name_city = %s AND date BETWEEN %s AND %s GROUP BY date', [my_city, start_date, end_date])
+            my_result = cursor.fetchall()
+            my_data = list(map(convert_time, my_result))
+            paginator = Paginator(my_data, 8)
+            my_data = paginator.get_page(1)
+            context= {'my_data': my_data, 'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field}
+            return render(request, 'result.html', context)
+        else:
+            error= 'Select correct date range!'
+            context = {'my_city': my_city, 'date_field': date_field, 'choice_field': choice_field, 'error': error}
+            return render(request, 'result.html', context)
